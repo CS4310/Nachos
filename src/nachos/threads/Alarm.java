@@ -1,5 +1,8 @@
 package nachos.threads;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+
 import nachos.machine.*;
 
 /**
@@ -15,9 +18,18 @@ public class Alarm {
      * alarm.
      */
     public Alarm() {
-	Machine.timer().setInterruptHandler(new Runnable() {
-		public void run() { timerInterrupt(); }
+    	Machine.timer().setInterruptHandler(new Runnable() {
+    		public void run() { timerInterrupt(); }
 	    });
+    	
+    	/********************
+    	 * init variables here
+    	 *********************/
+    	
+    	lock = new Lock();
+    	c2 = new Condition2(lock);
+    	waitQ = new ArrayList<>();
+    	wakeTimeQ = new ArrayList<>();
     }
 
     /**
@@ -26,8 +38,30 @@ public class Alarm {
      * thread to yield, forcing a context switch if there is another thread
      * that should be run.
      */
+    
+    /********************************
+     * check all threads and their wake time every 500 clock cycles
+     *********************************/
     public void timerInterrupt() {
-	KThread.currentThread().yield();
+    	//KThread.currentThread().yield();
+    	
+    	boolean intStatus = Machine.interrupt().disable();
+    	
+    	/*
+    	 * check all elements in wake time queue
+    	 * if the wake time >= current time, wake the element
+    	 */
+    	
+    	for(int i=0; i < wakeTimeQ.size(); i++) {
+    		if(Machine.timer().getTime() >= wakeTimeQ.get(i)) {
+    			waitQ.get(i).ready();
+    			wakeTimeQ.remove(i);
+    			waitQ.remove(i);
+    		}
+    	}
+    	
+    	Machine.interrupt().restore(intStatus);
+    	
     }
 
     /**
@@ -44,10 +78,42 @@ public class Alarm {
      *
      * @see	nachos.machine.Timer#getTime()
      */
+    
+    /***********************
+     * put threads to sleep 
+     ***********************/
     public void waitUntil(long x) {
-	// for now, cheat just to get something working (busy waiting is bad)
-	long wakeTime = Machine.timer().getTime() + x;
-	while (wakeTime > Machine.timer().getTime())
-	    KThread.yield();
+		// for now, cheat just to get something working (busy waiting is bad)
+ 
+    	
+		long wakeTime = Machine.timer().getTime() + x;
+		//while (wakeTime > Machine.timer().getTime()) {
+			//KThread.yield();
+		//}
+			
+		/*
+		 * put the element to sleep if it is not at wake time
+		 * use wake time queue to keep track of each thread wake time
+		 * use wait queue to keep track of all threads
+		 */
+		
+		boolean intStatus = Machine.interrupt().disable();
+		lock.acquire();
+		if(wakeTime > Machine.timer().getTime()) {
+			wakeTimeQ.add(wakeTime);
+			waitQ.add(KThread.currentThread());
+			c2.sleep();
+		}
+		lock.release();
+		Machine.interrupt().restore(intStatus);
     }
+    
+    /******************
+     * variable we used
+     ******************/
+    Lock lock;
+    Condition2 c2;
+    private ArrayList<KThread> waitQ;
+    private ArrayList<Long> wakeTimeQ;
+    
 }
