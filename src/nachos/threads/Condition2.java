@@ -4,6 +4,9 @@ import java.util.LinkedList;
 
 import nachos.machine.*;
 
+import java.util.Queue;
+import java.util.LinkedList;
+
 /**
  * An implementation of condition variables that disables interrupt()s for
  * synchronization.
@@ -14,7 +17,9 @@ import nachos.machine.*;
  * @see	nachos.threads.Condition
  */
 public class Condition2 {
-    /**
+
+	
+	/**
      * Allocate a new condition variable.
      *
      * @param	conditionLock	the lock associated with this condition
@@ -54,6 +59,7 @@ public class Condition2 {
 	
 		conditionLock.acquire(); //this line was given
 		Machine.interrupt().restore(intStatus);          //enable interrupt
+
     }
 
     /**
@@ -96,4 +102,5 @@ public class Condition2 {
     
     private Lock conditionLock;
     private LinkedList<KThread> q;
+
 }

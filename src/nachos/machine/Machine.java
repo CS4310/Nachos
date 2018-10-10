@@ -361,7 +361,7 @@ public final class Machine {
     private static AutoGrader autoGrader = null;
 
     //private static String autoGraderClassName = "nachos.ag.AutoGrader"; //Probably switch autograder here
-    private static String autoGraderClassName = "nachos.ag.ThreadGrader4";
+    private static String autoGraderClassName = "nachos.ag.ThreadGrader3";
     /**
      * Return the name of the shell program that a user-programming kernel
      * must run. Make sure <tt>UserKernel.run()</tt> <i>always</i> uses this

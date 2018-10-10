@@ -331,7 +331,6 @@ public class KThread {
     		c2.sleep();          //wake condition2 inside finish()
     		lock.release();
     	}
-    	
 
     }
 
@@ -495,7 +494,7 @@ public class KThread {
     private int id = numCreated++;
     /** Number of times the KThread constructor was called. */
     private static int numCreated = 0;
-
+    //private static ThreadQueue joinQueue = null;
     private static ThreadQueue readyQueue = null;
     private static KThread currentThread = null;
     private static KThread toBeDestroyed = null;
