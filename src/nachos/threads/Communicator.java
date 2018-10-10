@@ -17,7 +17,6 @@ public class Communicator {
     	lock            = new Lock();
     	speaker         = new Condition2(lock);
     	listener        = new Condition2(lock);
-    	//speakerListener = new Condition2(lock);
     	hasMessage      = false;
     	message         = Integer.MIN_VALUE;
     }
@@ -35,12 +34,11 @@ public class Communicator {
     public void speak(int word) {
     	lock.acquire();
     	while(hasMessage) {
-    		speaker.sleep(); //sleep when there is message(other speaker is occupied)
+    		speaker.sleep(); //sleep when there is message (other speaker is using the buffer)
     	}
     	
     	message = word;     //your turn to speak
     	hasMessage = true;  
-    	//speakerListener.sleep(); //to maintain 1 speak to 1 listener
     	listener.wake();
     	lock.release();
     	
@@ -61,7 +59,6 @@ public class Communicator {
     	
     	temp = message;  //message is available
     	hasMessage = false;
-    	//speakerListener.wake(); 
     	speaker.wake();
     	lock.release();
     	return temp;
@@ -71,7 +68,6 @@ public class Communicator {
     Lock lock;
     Condition2 speaker;
     Condition2 listener;
-    //Condition2 speakerListener;
     boolean hasMessage;
     
 }

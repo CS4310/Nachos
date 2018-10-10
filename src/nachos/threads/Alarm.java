@@ -1,5 +1,7 @@
 package nachos.threads;
 
+import java.util.LinkedList;
+
 import nachos.machine.*;
 
 /**
@@ -15,9 +17,14 @@ public class Alarm {
      * alarm.
      */
     public Alarm() {
-	Machine.timer().setInterruptHandler(new Runnable() {
-		public void run() { timerInterrupt(); }
+    	Machine.timer().setInterruptHandler(new Runnable() {
+    		public void run() { timerInterrupt(); }
 	    });
+    	
+    	lock = new Lock();
+    	c2 = new Condition2(lock);
+//    	waitQueue = new ThreadedKernel.scheduler.newThreadQueue(true);
+    	wait = new LinkedList<>();
     }
 
     /**
@@ -27,7 +34,7 @@ public class Alarm {
      * that should be run.
      */
     public void timerInterrupt() {
-	KThread.currentThread().yield();
+    	KThread.currentThread().yield();
     }
 
     /**
@@ -45,9 +52,27 @@ public class Alarm {
      * @see	nachos.machine.Timer#getTime()
      */
     public void waitUntil(long x) {
-	// for now, cheat just to get something working (busy waiting is bad)
-	long wakeTime = Machine.timer().getTime() + x;
-	while (wakeTime > Machine.timer().getTime())
-	    KThread.yield();
+		// for now, cheat just to get something working (busy waiting is bad)
+ 
+    	
+		long wakeTime = Machine.timer().getTime() + x;
+		while (wakeTime > Machine.timer().getTime()) {
+			KThread.yield();
+		}
+			
+		
+//		boolean intStatus = Machine.interrupt().disable();
+//		lock.acquire();
+//		if(wakeTime > Machine.timer().getTime()) {
+//			wait.add(KThread.currentThread());
+//			c2.sleep();
+//		}
+//		lock.release();
+//		Machine.interrupt().restore(intStatus);
     }
+    
+    Lock lock;
+    Condition2 c2;
+    private LinkedList<KThread> wait;
+    
 }

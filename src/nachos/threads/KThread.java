@@ -43,20 +43,26 @@ public class KThread {
      * create an idle thread as well.
      */
     public KThread() {
-	if (currentThread != null) {
-	    tcb = new TCB();
-	}	    
-	else {
-	    readyQueue = ThreadedKernel.scheduler.newThreadQueue(false);
-	    readyQueue.acquire(this);	    
-
-	    currentThread = this;
-	    tcb = TCB.currentTCB();
-	    name = "main";
-	    restoreState();
-
-	    createIdleThread();
-	}
+    	
+    	lock = new Lock();
+	    c2 = new Condition2(lock);
+	    joinQueue = ThreadedKernel.scheduler.newThreadQueue(true);
+	    
+		if (currentThread != null) {
+		    tcb = new TCB();
+		    
+		}	    
+		else {
+		    readyQueue = ThreadedKernel.scheduler.newThreadQueue(false);
+		    readyQueue.acquire(this);	    
+	
+		    currentThread = this;
+		    tcb = TCB.currentTCB();
+		    name = "main";
+		    restoreState();
+	
+		    createIdleThread();
+		}
     }
 
     /**
@@ -191,8 +197,18 @@ public class KThread {
 	Lib.assertTrue(toBeDestroyed == null);
 	toBeDestroyed = currentThread;
 
-
+	lock.acquire();
+	KThread thread = currentThread.joinQueue.nextThread();
+	while(thread != null) {
+		currentThread.joinQueue.acquire(thread);
+		thread = currentThread.joinQueue.nextThread();
+	}
+	c2.wakeAll();
+	currentThread.joinQueue = null;
+	lock.release();
+	
 	currentThread.status = statusFinished;
+	
 	
 	sleep();
     }
@@ -273,9 +289,37 @@ public class KThread {
      * thread.
      */
     public void join() {
-	Lib.debug(dbgThread, "Joining to thread: " + toString());
+    	Lib.debug(dbgThread, "Joining to thread: " + toString());
 
-	Lib.assertTrue(this != currentThread);
+    	Lib.assertTrue(this != currentThread);
+    	
+    	/********************************
+    	 * Pseudo Code:https://github.com/thinkhy/CS162/wiki/Note-for-Project-1
+    	 * join() {
+  				Disable interrupts;
+  				if (joinQueue not be initiated) {
+      			create a new thread queue (joinQueue) with transfer priority flag opened
+      			joinQueue acquires this thread as holder
+  			}
+  			If (CurrentThread != self) and (status is not Finished) {
+      			add current thread to join queue
+      			sleep current thread 
+  			}
+
+  			Re-enable interrupts;
+		}
+    	 */
+    	
+    	
+    	if(status != statusFinished) {
+    		lock.acquire();
+    		boolean intStatus = Machine.interrupt().disable();
+    		joinQueue.waitForAccess(currentThread);
+    		Machine.interrupt().restore(intStatus);
+    		c2.sleep();   //wake condition2 inside finish()
+    		lock.release();
+    	}
+    	
 
     }
 
@@ -444,4 +488,8 @@ public class KThread {
     private static KThread currentThread = null;
     private static KThread toBeDestroyed = null;
     private static KThread idleThread = null;
+    
+    static Condition2 c2;
+    static Lock lock;
+    ThreadQueue joinQueue;
 }
