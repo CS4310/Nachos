@@ -14,9 +14,13 @@ public class Communicator {
      * Allocate a new communicator.
      */
     public Communicator() {
+    	/****************
+    	 * initialize variables here
+    	 ****************************/
     	lock            = new Lock();
     	speaker         = new Condition2(lock);
     	listener        = new Condition2(lock);
+    	speakerListener = new Condition2(lock);
     	hasMessage      = false;
     	message         = Integer.MIN_VALUE;
     }
@@ -31,6 +35,12 @@ public class Communicator {
      *
      * @param	word	the integer to transfer.
      */
+    
+    /*************************************
+     * requirement is to satisfy 1 speak to 1 listener, 
+     * and we need speakerListener to keep track of that
+     *************************************/
+    
     public void speak(int word) {
     	lock.acquire();
     	while(hasMessage) {
@@ -38,8 +48,9 @@ public class Communicator {
     	}
     	
     	message = word;     //your turn to speak
-    	hasMessage = true;  
-    	listener.wake();
+    	hasMessage = true;  //a message is available for listener
+    	speakerListener.sleep();
+    	listener.wake();  
     	lock.release();
     	
     }
@@ -50,6 +61,11 @@ public class Communicator {
      *
      * @return	the integer transferred.
      */    
+    
+    /**************************
+     * return the message from speaker
+     ***********************/
+    
     public int listen() {
     	lock.acquire();
     	int temp;
@@ -59,15 +75,20 @@ public class Communicator {
     	
     	temp = message;  //message is available
     	hasMessage = false;
+    	speakerListener.wake();
     	speaker.wake();
     	lock.release();
     	return temp;
     }
     
+    /***********
+     * variable we use
+     *******************/
     private int message;
     Lock lock;
     Condition2 speaker;
     Condition2 listener;
+    Condition2 speakerListener;
     boolean hasMessage;
     
 }
