@@ -360,8 +360,13 @@ public final class Machine {
     private static NetworkLink networkLink = null;
     private static AutoGrader autoGrader = null;
 
+<<<<<<< HEAD
     private static String autoGraderClassName = "nachos.ag.AutoGrader";
 
+=======
+    //private static String autoGraderClassName = "nachos.ag.AutoGrader"; //Probably switch autograder here
+    private static String autoGraderClassName = "nachos.ag.ThreadGrader4";
+>>>>>>> 4ee0e38ebb4f393d6e741483adc4e9943284aa61
     /**
      * Return the name of the shell program that a user-programming kernel
      * must run. Make sure <tt>UserKernel.run()</tt> <i>always</i> uses this
