@@ -1,10 +1,7 @@
 package nachos.threads;
 
-<<<<<<< HEAD
-=======
 import java.util.LinkedList;
 
->>>>>>> 4ee0e38ebb4f393d6e741483adc4e9943284aa61
 import nachos.machine.*;
 
 /**
@@ -25,10 +22,6 @@ public class Condition2 {
      *				lock whenever it uses <tt>sleep()</tt>,
      *				<tt>wake()</tt>, or <tt>wakeAll()</tt>.
      */
-<<<<<<< HEAD
-    public Condition2(Lock conditionLock) {
-	this.conditionLock = conditionLock;
-=======
 	
 	/*****************************************
 	 * initialize conditionLock and queue here
@@ -37,7 +30,6 @@ public class Condition2 {
     public Condition2(Lock conditionLock) {
     	this.conditionLock = conditionLock;
     	q = new LinkedList<>();
->>>>>>> 4ee0e38ebb4f393d6e741483adc4e9943284aa61
     }
 
     /**
@@ -46,15 +38,6 @@ public class Condition2 {
      * current thread must hold the associated lock. The thread will
      * automatically reacquire the lock before <tt>sleep()</tt> returns.
      */
-<<<<<<< HEAD
-    public void sleep() {
-	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
-
-	conditionLock.release();
-
-	conditionLock.acquire();
-=======
-    
     /****************************
      * Try to make thread sleep using FIFO
      *****************************/
@@ -70,18 +53,12 @@ public class Condition2 {
 	
 		conditionLock.acquire(); //this line was given
 		Machine.interrupt().restore(intStatus);          //enable interrupt
->>>>>>> 4ee0e38ebb4f393d6e741483adc4e9943284aa61
     }
 
     /**
      * Wake up at most one thread sleeping on this condition variable. The
      * current thread must hold the associated lock.
      */
-<<<<<<< HEAD
-    public void wake() {
-	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
-=======
-    
     /******************************
      * Try to wake an asleep thread with FIFO
      ******************************/
@@ -94,20 +71,12 @@ public class Condition2 {
 			q.removeFirst().ready();
 			Machine.interrupt().restore(intStatus);
 		}
->>>>>>> 4ee0e38ebb4f393d6e741483adc4e9943284aa61
     }
 
     /**
      * Wake up all threads sleeping on this condition variable. The current
      * thread must hold the associated lock.
      */
-<<<<<<< HEAD
-    public void wakeAll() {
-	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
-    }
-
-    private Lock conditionLock;
-=======
     
     /************************
      * wait all asleep threads
@@ -125,5 +94,4 @@ public class Condition2 {
     
     private Lock conditionLock;
     private LinkedList<KThread> q;
->>>>>>> 4ee0e38ebb4f393d6e741483adc4e9943284aa61
 }

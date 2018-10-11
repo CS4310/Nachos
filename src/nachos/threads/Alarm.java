@@ -1,11 +1,8 @@
 package nachos.threads;
 
-<<<<<<< HEAD
-=======
 import java.util.ArrayList;
 import java.util.LinkedList;
 
->>>>>>> 4ee0e38ebb4f393d6e741483adc4e9943284aa61
 import nachos.machine.*;
 
 /**
@@ -21,12 +18,7 @@ public class Alarm {
      * alarm.
      */
     public Alarm() {
-<<<<<<< HEAD
-	Machine.timer().setInterruptHandler(new Runnable() {
-		public void run() { timerInterrupt(); }
-	    });
-=======
-    	Machine.timer().setInterruptHandler(new Runnable() {
+    		Machine.timer().setInterruptHandler(new Runnable() {
     		public void run() { timerInterrupt(); }
 	    });
     	
@@ -38,7 +30,6 @@ public class Alarm {
     	c2 = new Condition2(lock);
     	waitQ = new ArrayList<>();
     	wakeTimeQ = new ArrayList<>();
->>>>>>> 4ee0e38ebb4f393d6e741483adc4e9943284aa61
     }
 
     /**
@@ -47,10 +38,6 @@ public class Alarm {
      * thread to yield, forcing a context switch if there is another thread
      * that should be run.
      */
-<<<<<<< HEAD
-    public void timerInterrupt() {
-	KThread.currentThread().yield();
-=======
     
     /********************************
      * check all threads and their wake time every 500 clock cycles
@@ -74,8 +61,6 @@ public class Alarm {
     	}
     	
     	Machine.interrupt().restore(intStatus);
-    	
->>>>>>> 4ee0e38ebb4f393d6e741483adc4e9943284aa61
     }
 
     /**
@@ -92,14 +77,6 @@ public class Alarm {
      *
      * @see	nachos.machine.Timer#getTime()
      */
-<<<<<<< HEAD
-    public void waitUntil(long x) {
-	// for now, cheat just to get something working (busy waiting is bad)
-	long wakeTime = Machine.timer().getTime() + x;
-	while (wakeTime > Machine.timer().getTime())
-	    KThread.yield();
-    }
-=======
     
     /***********************
      * put threads to sleep 
@@ -138,5 +115,4 @@ public class Alarm {
     private ArrayList<KThread> waitQ;
     private ArrayList<Long> wakeTimeQ;
     
->>>>>>> 4ee0e38ebb4f393d6e741483adc4e9943284aa61
 }
