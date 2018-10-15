@@ -45,7 +45,6 @@ public class Alarm {
     public void timerInterrupt() {
     	//KThread.currentThread().yield();
     	
-    	boolean intStatus = Machine.interrupt().disable();
     	
     	/*
     	 * check all elements in wake time queue
@@ -60,7 +59,6 @@ public class Alarm {
     		}
     	}
     	
-    	Machine.interrupt().restore(intStatus);
     	
     }
 

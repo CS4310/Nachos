@@ -211,12 +211,11 @@ public class KThread {
 			currentThread.joinQueue.acquire(thread);
 			thread = currentThread.joinQueue.nextThread();
 		}
-		c2.wakeAll();
+		c2.wake();
 		currentThread.joinQueue = null;
 		lock.release();
 		
 		currentThread.status = statusFinished;
-		Machine.interrupt().disable();
 		
 		sleep();
     }
@@ -322,16 +321,17 @@ public class KThread {
 		}
     	 */
     	
-    	
+    	lock.acquire();
+    	//c2.sleep();
     	if(status != statusFinished) {
-    		lock.acquire();
+    		//lock.acquire();
     		boolean intStatus = Machine.interrupt().disable();
     		joinQueue.waitForAccess(currentThread);
     		Machine.interrupt().restore(intStatus);
     		c2.sleep();          //wake condition2 inside finish()
-    		lock.release();
+    		//lock.release();
     	}
-    	
+    	lock.release();
 
     }
 
