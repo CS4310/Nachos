@@ -66,6 +66,7 @@ public class KThread {
 		lock = new Lock();
 	    c2 = new Condition2(lock);
 	    joinQueue = ThreadedKernel.scheduler.newThreadQueue(true);
+	    joinedThread = null;
 	    
     }
 
@@ -205,12 +206,16 @@ public class KThread {
 		Lib.assertTrue(toBeDestroyed == null);
 		toBeDestroyed = currentThread;
 		
-
-		
-		 if(currentThread.joinedThread != null){
-		    currentThread.joinedThread.ready();  
+		/*********************
+		 * wake thread here
+		 **********************/
+		 if(joinedThread != null){
+			 currentThread = joinedThread; //it's important to switch back to the previous store thread
+			 lock.acquire();
+			 c2.wake();
+			 lock.release();
 		 }
-		 
+
 		
 		
 		currentThread.status = statusFinished;
@@ -296,13 +301,19 @@ public class KThread {
     
     /*******************
      * join threads
+     * we assume join() must only be called once
+     * we only need a variable to store its state
+     * and we use joinedThread to store the current thread
      *******************/
     public void join() {
     	Lib.debug(dbgThread, "Joining to thread: " + toString());
 
     	Lib.assertTrue(this != currentThread);
 
-    	
+    	/*************************************
+    	 * If not finished put thread to sleep
+    	 * Wake thread in finish()
+    	 *************************************/
     	if(this.status != statusFinished) {
 	    	lock.acquire();
 	    	joinedThread = currentThread;
@@ -483,5 +494,5 @@ public class KThread {
      ******************/
     static Condition2 c2;
     static Lock lock;
-    KThread joinedThread;
+    static KThread joinedThread;
 }

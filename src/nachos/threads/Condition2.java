@@ -72,7 +72,6 @@ public class Condition2 {
      ******************************/
     public void wake() {
 	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
-	
 		//if wait queue is not empty then we start removing from wait queue and put it in ready state
 		if(!q.isEmpty()) {
 			boolean intStatus = Machine.interrupt().disable();
@@ -101,6 +100,6 @@ public class Condition2 {
      ***********************************/
     
     private Lock conditionLock;
-    private LinkedList<KThread> q;
+    public LinkedList<KThread> q;
 
 }
