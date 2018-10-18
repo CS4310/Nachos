@@ -2,6 +2,7 @@ package nachos.threads;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.PriorityQueue;
 
 import nachos.machine.*;
 
@@ -28,7 +29,8 @@ public class Alarm {
     	
     	lock = new Lock();
     	c2 = new Condition2(lock);
-    	wakeTimeQ = new ArrayList<>();
+    	//wakeTimeQ = new ArrayList<>();
+    	waitingQ = new PriorityQueue<>();
     }
 
     /**
@@ -50,6 +52,20 @@ public class Alarm {
     	 * if the wake time >= current time, wake the element
     	 */
     	
+    	while(waitingQ.isEmpty() && waitingQ.peek().wakeTime <= Machine.timer().getTime()) {
+    		Condition2 c2 = waitingQ.poll().c2;
+    		
+    		if(c2 != null) {
+    			lock.acquire();
+    			c2.wake();
+    			lock.release();
+    		}
+    		
+    		
+    	}
+    	
+    	
+    	/*
     	for(int i=0; i < wakeTimeQ.size(); i++) {
     		if(Machine.timer().getTime() >= wakeTimeQ.get(i)) {
     			lock.acquire();
@@ -58,7 +74,7 @@ public class Alarm {
     			wakeTimeQ.remove(i);
     		}
     	}
-    	
+    	*/
     	
     }
 
@@ -95,12 +111,21 @@ public class Alarm {
 		 * use wait queue to keep track of all threads
 		 */
 		
+		Condition2 c2 = new Condition2(lock);
+		waitingQ.add(new ThreadNode(wakeTime,c2));
+		
+		lock.acquire();
+		c2.sleep();
+		lock.release();
+		
+		/*
 		lock.acquire();
 		if(wakeTime > Machine.timer().getTime()) {
 			wakeTimeQ.add(wakeTime);
 			c2.sleep();
 		}
 		lock.release();
+		*/
     }
     
     /******************
@@ -108,6 +133,16 @@ public class Alarm {
      ******************/
     Lock lock;
     Condition2 c2;
-    private ArrayList<Long> wakeTimeQ;
+   //private ArrayList<Long> wakeTimeQ;
+    private PriorityQueue<ThreadNode> waitingQ;
+    private class ThreadNode{
+    	private long wakeTime;
+    	private Condition2 c2;
+    	private ThreadNode(long wakeTime, Condition2 c2){
+    		this.wakeTime = wakeTime;
+    		this.c2 = c2;
+    	}
+    	
+    }
     
 }
