@@ -28,7 +28,6 @@ public class Alarm {
     	
     	lock = new Lock();
     	c2 = new Condition2(lock);
-    	waitQ = new ArrayList<>();
     	wakeTimeQ = new ArrayList<>();
     }
 
@@ -45,7 +44,6 @@ public class Alarm {
     public void timerInterrupt() {
     	//KThread.currentThread().yield();
     	
-    	boolean intStatus = Machine.interrupt().disable();
     	
     	/*
     	 * check all elements in wake time queue
@@ -54,13 +52,13 @@ public class Alarm {
     	
     	for(int i=0; i < wakeTimeQ.size(); i++) {
     		if(Machine.timer().getTime() >= wakeTimeQ.get(i)) {
-    			waitQ.get(i).ready();
+    			lock.acquire();
+    			c2.wake();
+    			lock.release();
     			wakeTimeQ.remove(i);
-    			waitQ.remove(i);
     		}
     	}
-    	
-    	Machine.interrupt().restore(intStatus);
+ 
     }
 
     /**
@@ -96,15 +94,12 @@ public class Alarm {
 		 * use wait queue to keep track of all threads
 		 */
 		
-		boolean intStatus = Machine.interrupt().disable();
 		lock.acquire();
 		if(wakeTime > Machine.timer().getTime()) {
 			wakeTimeQ.add(wakeTime);
-			waitQ.add(KThread.currentThread());
 			c2.sleep();
 		}
 		lock.release();
-		Machine.interrupt().restore(intStatus);
     }
     
     /******************
@@ -112,7 +107,6 @@ public class Alarm {
      ******************/
     Lock lock;
     Condition2 c2;
-    private ArrayList<KThread> waitQ;
     private ArrayList<Long> wakeTimeQ;
     
 }

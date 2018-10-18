@@ -66,6 +66,8 @@ public class KThread {
 		lock = new Lock();
 	    c2 = new Condition2(lock);
 	    joinQueue = ThreadedKernel.scheduler.newThreadQueue(true);
+	    joinedThread = null;
+	    
     }
 
     /**
@@ -203,20 +205,20 @@ public class KThread {
 	
 		Lib.assertTrue(toBeDestroyed == null);
 		toBeDestroyed = currentThread;
-	
 		
-		lock.acquire();
-		KThread thread = currentThread.joinQueue.nextThread();
-		while(thread != null) {
-			currentThread.joinQueue.acquire(thread);
-			thread = currentThread.joinQueue.nextThread();
-		}
-		c2.wakeAll();
-		currentThread.joinQueue = null;
-		lock.release();
+		/*********************
+		 * wake thread here
+		 **********************/
+		 if(joinedThread != null){
+			 currentThread = joinedThread; //it's important to switch back to the previous store thread
+			 lock.acquire();
+			 c2.wake();
+			 lock.release();
+		 }
+
+		
 		
 		currentThread.status = statusFinished;
-		Machine.interrupt().disable();
 		
 		sleep();
     }
@@ -298,21 +300,24 @@ public class KThread {
      */
     /*******************
      * join threads
+     * we assume join() must only be called once
+     * we only need a variable to store its state
+     * and we use joinedThread to store the current thread
      *******************/
     public void join() {
     	Lib.debug(dbgThread, "Joining to thread: " + toString());
 
     	Lib.assertTrue(this != currentThread);
-    	    	
-    	if(status != statusFinished) {
-    		lock.acquire();
-    		boolean intStatus = Machine.interrupt().disable();
-    		joinQueue.waitForAccess(currentThread);
-    		Machine.interrupt().restore(intStatus);
-    		c2.sleep();          //wake condition2 inside finish()
-    		lock.release();
+	/*************************************
+    	 * If not finished put thread to sleep
+    	 * Wake thread in finish()
+    	 *************************************/
+    	if(this.status != statusFinished) {
+	    	lock.acquire();
+	    	joinedThread = currentThread;
+	    	c2.sleep();
+	    	lock.release();
     	}
-    	
 
     }
 
@@ -476,7 +481,7 @@ public class KThread {
     private int id = numCreated++;
     /** Number of times the KThread constructor was called. */
     private static int numCreated = 0;
-
+    private static ThreadQueue joinQueue = null;
     private static ThreadQueue readyQueue = null;
     private static KThread currentThread = null;
     private static KThread toBeDestroyed = null;
@@ -487,5 +492,5 @@ public class KThread {
      ******************/
     static Condition2 c2;
     static Lock lock;
-    ThreadQueue joinQueue;
+    static KThread joinedThread;
 }
