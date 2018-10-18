@@ -303,25 +303,7 @@ public class KThread {
     	Lib.debug(dbgThread, "Joining to thread: " + toString());
 
     	Lib.assertTrue(this != currentThread);
-    	
-    	/********************************
-    	 * Pseudo Code:https://github.com/thinkhy/CS162/wiki/Note-for-Project-1
-    	 * join() {
-  				Disable interrupts;
-  				if (joinQueue not be initiated) {
-      			create a new thread queue (joinQueue) with transfer priority flag opened
-      			joinQueue acquires this thread as holder
-  			}
-  			If (CurrentThread != self) and (status is not Finished) {
-      			add current thread to join queue
-      			sleep current thread 
-  			}
-
-  			Re-enable interrupts;
-		}
-    	 */
-    	
-    	
+    	    	
     	if(status != statusFinished) {
     		lock.acquire();
     		boolean intStatus = Machine.interrupt().disable();
