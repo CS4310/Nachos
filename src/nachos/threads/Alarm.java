@@ -1,8 +1,10 @@
 package nachos.threads;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
+import java.util.Comparator;
 
 import nachos.machine.*;
 
@@ -30,7 +32,7 @@ public class Alarm {
     	lock = new Lock();
     	c2 = new Condition2(lock);
     	//wakeTimeQ = new ArrayList<>();
-    	waitingQ = new PriorityQueue<>();
+    	waitingQueue = new PriorityQueue<>();
     }
 
     /**
@@ -52,8 +54,8 @@ public class Alarm {
     	 * if the wake time >= current time, wake the element
     	 */
     	
-    	while(waitingQ.isEmpty() && waitingQ.peek().wakeTime <= Machine.timer().getTime()) {
-    		Condition2 c2 = waitingQ.poll().c2;
+    	while(!waitingQueue.isEmpty() && waitingQueue.peek().wakeTime <= Machine.timer().getTime()) {
+    		Condition2 c2 = waitingQueue.poll().c2;
     		
     		if(c2 != null) {
     			lock.acquire();
@@ -112,7 +114,7 @@ public class Alarm {
 		 */
 		
 		Condition2 c2 = new Condition2(lock);
-		waitingQ.add(new ThreadNode(wakeTime,c2));
+		waitingQueue.add(new ThreadNode(wakeTime,c2));
 		
 		lock.acquire();
 		c2.sleep();
@@ -134,14 +136,24 @@ public class Alarm {
     Lock lock;
     Condition2 c2;
    //private ArrayList<Long> wakeTimeQ;
-    private PriorityQueue<ThreadNode> waitingQ;
-    private class ThreadNode{
+   //private Comparator<ThreadNode> waitingQueueComparator;
+    private PriorityQueue<ThreadNode> waitingQueue;
+    private class ThreadNode implements Comparable<ThreadNode>{
     	private long wakeTime;
     	private Condition2 c2;
     	private ThreadNode(long wakeTime, Condition2 c2){
     		this.wakeTime = wakeTime;
     		this.c2 = c2;
     	}
+		@Override
+		public int compareTo(ThreadNode c2) {
+			if (this.wakeTime < c2.wakeTime)
+				return -1;
+			else if (this.wakeTime > c2.wakeTime)
+				return 1;
+			else
+				return 0;
+		}
     	
     }
     
