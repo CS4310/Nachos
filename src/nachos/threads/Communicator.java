@@ -49,7 +49,7 @@ public class Communicator {
     	
     	message = word;     //your turn to speak
     	hasMessage = true;  //a message is available for listener
-    	speakerListener.sleep();
+    	//speakerListener.sleep();
     	listener.wake();  
     	lock.release();
     	
@@ -75,7 +75,7 @@ public class Communicator {
     	
     	temp = message;  //message is available
     	hasMessage = false;
-    	speakerListener.wake();
+    	//speakerListener.wake();
     	speaker.wake();
     	lock.release();
     	return temp;
