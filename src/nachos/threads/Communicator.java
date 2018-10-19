@@ -1,5 +1,8 @@
 package nachos.threads;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 import nachos.machine.*;
 
 /**
@@ -17,12 +20,14 @@ public class Communicator {
     	/****************
     	 * initialize variables here
     	 ****************************/
-    	lock            = new Lock();
-    	speaker         = new Condition2(lock);
-    	listener        = new Condition2(lock);
+    	lock      = new Lock();
+    	message   = null;
+    	speaker   = new Condition2(lock);
+    	listener  = new Condition2(lock);
     	speakerListener = new Condition2(lock);
-    	hasMessage      = false;
-    	message         = Integer.MIN_VALUE;
+    	speakerQ  = new LinkedList<>();
+    	listenerQ = new LinkedList<>();
+    	
     }
 
     /**
@@ -43,16 +48,19 @@ public class Communicator {
     
     public void speak(int word) {
     	lock.acquire();
-    	while(hasMessage) {
-    		speaker.sleep(); //sleep when there is message (other speaker is using the buffer)
+    	
+    	while(message != null) {
+    		//speakerQ.add(KThread.currentThread());
+    		speaker.sleep();
     	}
     	
-    	message = word;     //your turn to speak
-    	hasMessage = true;  //a message is available for listener
-    	//speakerListener.sleep();
-    	listener.wake();  
-    	lock.release();
+    	message= new Integer(word);
+    	speakerListener.sleep();
+    	listener.wake();
     	
+    	//listenerQ.poll();
+    	
+    	lock.release();
     }
 
     /**
@@ -68,27 +76,35 @@ public class Communicator {
     
     public int listen() {
     	lock.acquire();
+    	
     	int temp;
-    	while(!hasMessage) {
-    		listener.sleep(); //sleep when no message in buffer
+    	while(message == null) {
+    		//listenerQ.add(KThread.currentThread());
+    		listener.sleep();
     	}
     	
-    	temp = message;  //message is available
-    	hasMessage = false;
-    	//speakerListener.wake();
+    	speakerListener.wake();
     	speaker.wake();
+    	
+    	//speakerQ.poll();
+    		
+    	temp = message.intValue();
+    	message = null;
     	lock.release();
+    	
     	return temp;
     }
     
     /***********
      * variable we use
      *******************/
-    private int message;
+    Integer message;
     Lock lock;
     Condition2 speaker;
     Condition2 listener;
     Condition2 speakerListener;
-    boolean hasMessage;
+    Queue <KThread> speakerQ;
+    Queue <KThread> listenerQ;
+
     
 }
