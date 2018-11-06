@@ -1,10 +1,6 @@
 package nachos.threads;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.PriorityQueue;
-import java.util.Comparator;
 
 import nachos.machine.*;
 
@@ -31,7 +27,6 @@ public class Alarm {
     	
     	lock = new Lock();
     	c2 = new Condition2(lock);
-    	//wakeTimeQ = new ArrayList<>();
     	waitingQueue = new PriorityQueue<>();
     }
 
@@ -50,34 +45,24 @@ public class Alarm {
     	
     	
     	/*
-    	 * check all elements in wake time queue
-    	 * if the wake time >= current time, wake the element
+    	 * While the queue isn't empty. It checks the first Condition2 in the queue
+    	 * and checks if it's paired wait time is less than the current machine time,
+    	 * it is removed from the queue and woken up.
     	 */
     	
-    	while(!waitingQueue.isEmpty() && waitingQueue.peek().wakeTime <= Machine.timer().getTime()) {
-    		Condition2 c2 = waitingQueue.poll().c2;
+    	while(!waitingQueue.isEmpty() && waitingQueue.peek().wakeTime <= Machine.timer().getTime()){
     		
-    		if(c2 != null) {
+    		Condition2 c2 = waitingQueue.poll().c2;//Removes the top Condition2 of the queue
+    		
+    		if(c2 != null) {//Checks if the condition variable is null, just incase
     			lock.acquire();
-    			c2.wake();
+    			c2.wake();//wakes the condition variable with its paired wait time
     			lock.release();
     		}
     		
     		
     	}
-    	
-    	
-    	/*
-    	for(int i=0; i < wakeTimeQ.size(); i++) {
-    		if(Machine.timer().getTime() >= wakeTimeQ.get(i)) {
-    			lock.acquire();
-    			c2.wake();
-    			lock.release();
-    			wakeTimeQ.remove(i);
-    		}
-    	}
-    	*/
-    	
+    	 	
     }
 
     /**
@@ -103,49 +88,55 @@ public class Alarm {
  
     	
 		long wakeTime = Machine.timer().getTime() + x;
+		
 		//while (wakeTime > Machine.timer().getTime()) {
 			//KThread.yield();
 		//}
 			
 		/*
-		 * put the element to sleep if it is not at wake time
-		 * use wake time queue to keep track of each thread wake time
-		 * use wait queue to keep track of all threads
+		 * Create a new condition variable to represent the thread. Then
+		 * encapsulate it with the calculated wait time into a ThreadNode
+		 * that will be stored in a priority queue. Once encapsulated, the 
+		 * condition variable is put to sleep
 		 */
 		
-		Condition2 c2 = new Condition2(lock);
-		waitingQueue.add(new ThreadNode(wakeTime,c2));
+		Condition2 c2 = new Condition2(lock);//Create new condition variable for specific wake
+		waitingQueue.add(new ThreadNode(wakeTime,c2));//encapsulating into a node.
 		
 		lock.acquire();
 		c2.sleep();
 		lock.release();
 		
-		/*
-		lock.acquire();
-		if(wakeTime > Machine.timer().getTime()) {
-			wakeTimeQ.add(wakeTime);
-			c2.sleep();
-		}
-		lock.release();
-		*/
     }
     
     /******************
      * variable we used
      ******************/
-    Lock lock;
+    private Lock lock;
     Condition2 c2;
-   //private ArrayList<Long> wakeTimeQ;
-   //private Comparator<ThreadNode> waitingQueueComparator;
+    /*
+     * This is the priority queue that holds a thread node which pairs the 
+     * condition variable with its wake time.
+     */
     private PriorityQueue<ThreadNode> waitingQueue;
+    /*
+     * This is the private class that represents a node that holds the condition
+     * variable and its wake time.
+     */
     private class ThreadNode implements Comparable<ThreadNode>{
-    	private long wakeTime;
-    	private Condition2 c2;
+    	private long wakeTime; //the condition variables wake time
+    	private Condition2 c2;// the condition variable
     	private ThreadNode(long wakeTime, Condition2 c2){
     		this.wakeTime = wakeTime;
     		this.c2 = c2;
     	}
-		@Override
+    	/*
+    	 * This is used to compare the nodes wait times in the priority queue.
+    	 * The node with the smallest wake time is given priority in the queue
+    	 * (non-Javadoc)
+    	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+    	 */
+		@Override 
 		public int compareTo(ThreadNode c2) {
 			if (this.wakeTime < c2.wakeTime)
 				return -1;
