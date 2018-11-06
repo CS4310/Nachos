@@ -5,6 +5,7 @@ import nachos.machine.*;
 import java.util.TreeSet;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 /**
  * A scheduler that chooses threads based on their priorities.
@@ -42,58 +43,58 @@ public class PriorityScheduler extends Scheduler {
      * @return	a new priority thread queue.
      */
     public ThreadQueue newThreadQueue(boolean transferPriority) {
-	return new PriorityQueue(transferPriority);
+    	return new PriorityQueue(transferPriority);
     }
 
     public int getPriority(KThread thread) {
-	Lib.assertTrue(Machine.interrupt().disabled());
+    	Lib.assertTrue(Machine.interrupt().disabled());
 		       
-	return getThreadState(thread).getPriority();
+    	return getThreadState(thread).getPriority();
     }
 
     public int getEffectivePriority(KThread thread) {
-	Lib.assertTrue(Machine.interrupt().disabled());
+    	Lib.assertTrue(Machine.interrupt().disabled());
 		       
-	return getThreadState(thread).getEffectivePriority();
+    	return getThreadState(thread).getEffectivePriority();
     }
 
     public void setPriority(KThread thread, int priority) {
-	Lib.assertTrue(Machine.interrupt().disabled());
-		       
-	Lib.assertTrue(priority >= priorityMinimum &&
-		   priority <= priorityMaximum);
-	
-	getThreadState(thread).setPriority(priority);
+		Lib.assertTrue(Machine.interrupt().disabled());
+			       
+		Lib.assertTrue(priority >= priorityMinimum &&
+			   priority <= priorityMaximum);
+		
+		getThreadState(thread).setPriority(priority);
     }
 
     public boolean increasePriority() {
-	boolean intStatus = Machine.interrupt().disable();
-		       
-	KThread thread = KThread.currentThread();
-
-	int priority = getPriority(thread);
-	if (priority == priorityMaximum)
-	    return false;
-
-	setPriority(thread, priority+1);
-
-	Machine.interrupt().restore(intStatus);
-	return true;
+		boolean intStatus = Machine.interrupt().disable();
+			       
+		KThread thread = KThread.currentThread();
+	
+		int priority = getPriority(thread);
+		if (priority == priorityMaximum)
+		    return false;
+	
+		setPriority(thread, priority+1);
+	
+		Machine.interrupt().restore(intStatus);
+		return true;
     }
 
     public boolean decreasePriority() {
-	boolean intStatus = Machine.interrupt().disable();
-		       
-	KThread thread = KThread.currentThread();
-
-	int priority = getPriority(thread);
-	if (priority == priorityMinimum)
-	    return false;
-
-	setPriority(thread, priority-1);
-
-	Machine.interrupt().restore(intStatus);
-	return true;
+		boolean intStatus = Machine.interrupt().disable();
+			       
+		KThread thread = KThread.currentThread();
+	
+		int priority = getPriority(thread);
+		if (priority == priorityMinimum)
+		    return false;
+	
+		setPriority(thread, priority-1);
+	
+		Machine.interrupt().restore(intStatus);
+		return true;
     }
 
     /**
@@ -126,48 +127,54 @@ public class PriorityScheduler extends Scheduler {
      * A <tt>ThreadQueue</tt> that sorts threads by priority.
      */
     protected class PriorityQueue extends ThreadQueue {
-	PriorityQueue(boolean transferPriority) {
-	    this.transferPriority = transferPriority;
-	}
-
-	public void waitForAccess(KThread thread) {
-	    Lib.assertTrue(Machine.interrupt().disabled());
-	    getThreadState(thread).waitForAccess(this);
-	}
-
-	public void acquire(KThread thread) {
-	    Lib.assertTrue(Machine.interrupt().disabled());
-	    getThreadState(thread).acquire(this);
-	}
-
-	public KThread nextThread() {
-	    Lib.assertTrue(Machine.interrupt().disabled());
-	    // implement me
-	    return null;
-	}
-
-	/**
-	 * Return the next thread that <tt>nextThread()</tt> would return,
-	 * without modifying the state of this queue.
-	 *
-	 * @return	the next thread that <tt>nextThread()</tt> would
-	 *		return.
-	 */
-	protected ThreadState pickNextThread() {
-	    // implement me
-	    return null;
-	}
+    	
+		PriorityQueue(boolean transferPriority) {
+		    this.transferPriority = transferPriority;
+		}
 	
-	public void print() {
-	    Lib.assertTrue(Machine.interrupt().disabled());
-	    // implement me (if you want)
-	}
-
-	/**
-	 * <tt>true</tt> if this queue should transfer priority from waiting
-	 * threads to the owning thread.
-	 */
-	public boolean transferPriority;
+		public void waitForAccess(KThread thread) {
+		    Lib.assertTrue(Machine.interrupt().disabled());
+		    getThreadState(thread).waitForAccess(this);
+		    waitQueue.add(thread);
+		}
+	
+		public void acquire(KThread thread) {
+		    Lib.assertTrue(Machine.interrupt().disabled());
+		    getThreadState(thread).acquire(this);
+		}
+	
+		public KThread nextThread() {
+		    Lib.assertTrue(Machine.interrupt().disabled());
+		    // implement me
+		    if(waitQueue.isEmpty())
+		    	return null;
+		    return waitQueue.removeFirst();
+		}
+	
+		/**
+		 * Return the next thread that <tt>nextThread()</tt> would return,
+		 * without modifying the state of this queue.
+		 *
+		 * @return	the next thread that <tt>nextThread()</tt> would
+		 *		return.
+		 */
+		protected ThreadState pickNextThread() {
+		    // implement me
+		    return null;
+		}
+		
+		public void print() {
+		    Lib.assertTrue(Machine.interrupt().disabled());
+		    // implement me (if you want)
+		}
+	
+		/**
+		 * <tt>true</tt> if this queue should transfer priority from waiting
+		 * threads to the owning thread.
+		 */
+		public boolean transferPriority;
+		
+		LinkedList<KThread> waitQueue = new LinkedList<>();
     }
 
     /**
