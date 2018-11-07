@@ -64,7 +64,8 @@ public class KThread {
 		 * initialize variable here
 		 ***************************/
 		lock = new Lock();
-	    c2 = new Condition2(lock);
+//	    c2 = new Condition2(lock);
+		c1 = new Condition(lock);
 	    joinQueue = ThreadedKernel.scheduler.newThreadQueue(true);
 	    joinedThread = null;
 	    
@@ -212,7 +213,8 @@ public class KThread {
 		 if(joinedThread != null){
 			 currentThread = joinedThread; //it's important to switch back to the previous store thread
 			 lock.acquire();
-			 c2.wake();
+//			 c2.wake();
+			 c1.wake();
 			 lock.release();
 		 }
 
@@ -317,7 +319,8 @@ public class KThread {
     	if(this.status != statusFinished) {
 	    	lock.acquire();
 	    	joinedThread = currentThread;
-	    	c2.sleep();
+//	    	c2.sleep();
+	    	c1.sleep();
 	    	lock.release();
     	}
 
@@ -492,6 +495,7 @@ public class KThread {
     /*******************
      * variable we use
      ******************/
+    static Condition c1;
     static Condition2 c2;
     static Lock lock;
     static KThread joinedThread;
