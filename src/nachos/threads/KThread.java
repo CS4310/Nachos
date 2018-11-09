@@ -495,8 +495,8 @@ public class KThread {
     /*******************
      * variable we use
      ******************/
-   static Condition c1;
-   static Condition2 c2;
-   static Lock lock;
-   static KThread joinedThread;
+    protected static Condition c1;
+    protected static Condition2 c2;
+    protected static Lock lock;
+    protected static KThread joinedThread;
 }
