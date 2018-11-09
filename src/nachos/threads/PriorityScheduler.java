@@ -154,8 +154,8 @@ public class PriorityScheduler extends Scheduler {
 	
 		public KThread nextThread() {
 		    Lib.assertTrue(Machine.interrupt().disabled());
-//		    wait(1);
-//		    print();
+		    wait(1);
+		    print();
 		    ThreadState state = pickNextThread();
 		    
 		    if(state == null)
@@ -195,13 +195,14 @@ public class PriorityScheduler extends Scheduler {
 		
 		public void print() {
 		    Lib.assertTrue(Machine.interrupt().disabled());
+		    // implement me (if you want)
+//		    for(int i=0; i<waitQueue.size();i++)
+//		    	System.out.print(waitQueue.get(i)+" ");
 		    System.out.println();
 		    for (Entry<ThreadState, Integer> entry : waitQueue.entrySet()) {
 		        System.out.println(entry.getKey().thread+" : "+entry.getValue());
 		    }
 		}
-		
-		//pause the program
 		public void wait(int seconds)
 		{
 		   long waitTime = seconds * 1000000000; // Convert to nano seconds
@@ -225,6 +226,7 @@ public class PriorityScheduler extends Scheduler {
 		HashMap<ThreadState, Integer> waitQueue = new HashMap<>();
 		Iterator<Entry<ThreadState, Integer>> it;
 		
+		//ThreadState resourceHolder = null;
     }
 
     /**
@@ -244,7 +246,6 @@ public class PriorityScheduler extends Scheduler {
 		public ThreadState(KThread thread) {
 		    this.thread = thread;
 		    setPriority(priorityDefault);
-		    ownedResources = new LinkedList<>();
 		}
 	
 		/**
@@ -316,6 +317,9 @@ public class PriorityScheduler extends Scheduler {
 		/** The priority of the associated thread. */
 		protected int priority;
 		
-		LinkedList<PriorityQueue> ownedResources;
+//		LinkedList<PriorityQueue> resourceQueue = new LinkedList<PriorityQueue>();
+//		LinkedList<PriorityQueue> waitingQueue = new LinkedList<PriorityQueue>();
+//		int effectivePriority = priorityMinimum;
+//		boolean priorityCheck = false;
     }
 }
