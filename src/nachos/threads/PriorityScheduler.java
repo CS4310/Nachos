@@ -137,7 +137,7 @@ public class PriorityScheduler extends Scheduler {
 		    this.transferPriority = transferPriority;
 		    dequeuedThread = null;
 		    priorityThreadQueue = new java.util.PriorityQueue<>();
-		    effectivePriorities = new HashMap<>();
+//		    effectivePriorities = new HashMap<>();
 		}
 	
 		public void waitForAccess(KThread thread) {
@@ -210,7 +210,7 @@ public class PriorityScheduler extends Scheduler {
 //		LinkedList<KThread> waitQueue = new LinkedList<>();
 		protected ThreadState dequeuedThread;
 		protected java.util.PriorityQueue<ThreadState> priorityThreadQueue;
-		protected HashMap<ThreadState, Integer> effectivePriorities;
+//		protected HashMap<ThreadState, Integer> effectivePriorities;
     }
 
     
@@ -237,6 +237,7 @@ public class PriorityScheduler extends Scheduler {
 		    this.donationQueues = new LinkedList<>();
 		    this.waitingQueue = null;
 		    this.threadAge = Machine.timer().getTime();
+		    this.effectivePriorities = new HashMap<>();
 		    
 		    setPriority(priorityDefault);
 		}
@@ -258,9 +259,9 @@ public class PriorityScheduler extends Scheduler {
 		public int getEffectivePriority() {
 		    // implement me
 			
-			return this.effectivePriority;
+			return effectivePriorities.get(this);
 		}
-	
+		
 		
 		/*
 		 * Calculates the Effective Priority without hashing
@@ -285,6 +286,9 @@ public class PriorityScheduler extends Scheduler {
 				maxEffecivePriority = initialPriority;
 			
 			this.effectivePriority = maxEffecivePriority;
+			
+			effectivePriorities.put(this, this.effectivePriority);
+			
 			//now that my own effectivePriority Changes I have to recalculate the threads which i am waiting on
 			if (this.waitingQueue != null && this.waitingQueue.dequeuedThread != null)
 				if (this.effectivePriority != this.waitingQueue.dequeuedThread.effectivePriority)
@@ -354,8 +358,8 @@ public class PriorityScheduler extends Scheduler {
 		public void updatePriority() {
 
 			this.calculateEffectivePriority();
-			if(this.waitingQueue != null && this.waitingQueue.dequeuedThread != null)
-				this.waitingQueue.dequeuedThread.calculateEffectivePriority();
+			//if(this.waitingQueue != null && this.waitingQueue.dequeuedThread != null)
+				//this.waitingQueue.dequeuedThread.calculateEffectivePriority();
 		}
 		
 		public int compareTo(ThreadState threadState) {
@@ -393,6 +397,7 @@ public class PriorityScheduler extends Scheduler {
 		protected LinkedList<PriorityQueue> donationQueues;
 		protected PriorityQueue waitingQueue;
 		public long threadAge;
+		protected HashMap<ThreadState, Integer> effectivePriorities;
 		
 	    }
     
