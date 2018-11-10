@@ -127,7 +127,7 @@ public class PriorityScheduler extends Scheduler {
 	return (ThreadState) thread.schedulingState;
     }
     
-  /**********************************************************************************************************************************************************************/ 
+ /**********************************************************************************************************************************************************************/ 
 
     /**
      * A <tt>ThreadQueue</tt> that sorts threads by priority.
@@ -191,7 +191,7 @@ public class PriorityScheduler extends Scheduler {
 		    Lib.assertTrue(Machine.interrupt().disabled());
 		    // implement me (if you want)
 		    
-		    ThreadState[] priorityQueueElementsList =  (ThreadState[]) priorityThreadQueue.toArray();
+		    ThreadState[] priorityQueueElementsList = (ThreadState[]) priorityThreadQueue.toArray();
 		    System.out.println("PriorityQueue:");
 		    for(int i = 0; i < priorityQueueElementsList.length; i++)
 		    	System.out.print(" " + priorityQueueElementsList[i]);
@@ -207,14 +207,14 @@ public class PriorityScheduler extends Scheduler {
 		/********************
 		 * Variables we used
 		 ********************/
-		//LinkedList<KThread> waitQueue = new LinkedList<>();
+//		LinkedList<KThread> waitQueue = new LinkedList<>();
 		protected ThreadState dequeuedThread;
 		protected java.util.PriorityQueue<ThreadState> priorityThreadQueue;
 		protected HashMap<ThreadState, Integer> effectivePriorities;
     }
 
     
-  /**********************************************************************************************************************************************************************/  
+ /**********************************************************************************************************************************************************************/  
     
     /**
      * The scheduling state of a thread. This should include the thread's
@@ -236,6 +236,7 @@ public class PriorityScheduler extends Scheduler {
 		    this.effectivePriority = priorityDefault;
 		    this.donationQueues = new LinkedList<>();
 		    this.waitingQueue = null;
+		    this.threadAge = Machine.timer().getTime();
 		    
 		    setPriority(priorityDefault);
 		}
@@ -273,6 +274,7 @@ public class PriorityScheduler extends Scheduler {
 				for(int i = 0; i < donationQueues.size(); i++){
 					PriorityQueue currentQueue = donationQueues.get(i);
 					ThreadState donatorThread = currentQueue.pickNextThread();
+					
 					if (donatorThread != null)
 						if ((donatorThread.getEffectivePriority() > maxEffecivePriority) && currentQueue.transferPriority)
 							maxEffecivePriority = donatorThread.getEffectivePriority();
@@ -291,28 +293,21 @@ public class PriorityScheduler extends Scheduler {
 		}
 		
 		
-		
-		
-		
-		
-		
-		
-		
 		/**
 		 * Set the priority of the associated thread to the specified value.
 		 *
 		 * @param	priority	the new priority.
 		 */
 		public void setPriority(int priority) {
+			
 		    if (this.priority == priority)
 			return;
 		    
 		    this.priority = priority;
 		    
-		    // implement me
+		    //implement me
 		    updatePriority();
-		    if(this.waitingQueue != null && this.waitingQueue.dequeuedThread != null)
-				this.waitingQueue.dequeuedThread.calculateEffectivePriority();
+		    
 		}
 	
 		/**
@@ -330,6 +325,7 @@ public class PriorityScheduler extends Scheduler {
 		public void waitForAccess(PriorityQueue waitQueue) {
 		    // implement me
 			
+			this.threadAge = Machine.timer().getTime();
 			waitQueue.priorityThreadQueue.add(this);
 			this.waitingQueue = waitQueue;
 			if(waitQueue.dequeuedThread == null)
@@ -358,6 +354,8 @@ public class PriorityScheduler extends Scheduler {
 		public void updatePriority() {
 
 			this.calculateEffectivePriority();
+			if(this.waitingQueue != null && this.waitingQueue.dequeuedThread != null)
+				this.waitingQueue.dequeuedThread.calculateEffectivePriority();
 		}
 		
 		public int compareTo(ThreadState threadState) {
@@ -368,8 +366,13 @@ public class PriorityScheduler extends Scheduler {
 				return 1;
 			else if(this.getEffectivePriority() > threadState.getEffectivePriority())
 				return -1;
-			else 
-				return 0;
+			else {
+				if(this.threadAge >= threadState.threadAge)
+					return 1;
+				else
+					return -1;
+			}
+				
 		}
 		
 		public String toString() {
@@ -389,6 +392,7 @@ public class PriorityScheduler extends Scheduler {
 		protected int effectivePriority;
 		protected LinkedList<PriorityQueue> donationQueues;
 		protected PriorityQueue waitingQueue;
+		public long threadAge;
 		
 	    }
     

@@ -34,7 +34,8 @@ public class Condition2 {
 	
     public Condition2(Lock conditionLock) {
     	this.conditionLock = conditionLock;
-    	q = new LinkedList<>();
+//    	q = new LinkedList<>();
+    	waitQueue = ThreadedKernel.scheduler.newThreadQueue(true);
     }
 
     /**
@@ -52,11 +53,13 @@ public class Condition2 {
 		
 		
 		boolean intStatus = Machine.interrupt().disable(); //disable other thread interrupt
-		KThread current = KThread.currentThread();         //current has current thread
-		q.add(current);                                   //add to queue and wait to be wake
 		conditionLock.release();  //this line was given
+		
+		KThread current = KThread.currentThread();         //current has current thread
+//		q.add(current);                                   //add to queue and wait to be wake
+		waitQueue.waitForAccess(current);
 		KThread.sleep();                                 //put thread to sleep
-	
+		
 		conditionLock.acquire(); //this line was given
 		Machine.interrupt().restore(intStatus);          //enable interrupt
 
@@ -73,11 +76,22 @@ public class Condition2 {
     public void wake() {
 	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
 		//if wait queue is not empty then we start removing from wait queue and put it in ready state
-		if(!q.isEmpty()) {
-			boolean intStatus = Machine.interrupt().disable();
-			q.removeFirst().ready();
-			Machine.interrupt().restore(intStatus);
-		}
+	
+//		if(!q.isEmpty()) {
+//			boolean intStatus = Machine.interrupt().disable();
+//			q.removeFirst().ready();
+//			Machine.interrupt().restore(intStatus);
+//		}
+		
+		boolean intStatus = Machine.interrupt().disable();
+		
+		KThread current = waitQueue.nextThread();
+		if(current != null)
+			current.ready();
+		
+		Machine.interrupt().restore(intStatus);
+		
+	
     }
 
     /**
@@ -100,6 +114,7 @@ public class Condition2 {
      ***********************************/
     
     private Lock conditionLock;
-    public LinkedList<KThread> q;
+    private LinkedList<KThread> q;
+    private ThreadQueue waitQueue; 
 
 }
