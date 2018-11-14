@@ -46,12 +46,6 @@ public class ThreadGrader6 extends BasicTestGrader
     KThread med2 = forkNewThread(new Med(), 3).thread;
     KThread high = forkNewThread(new High(), 4).thread;
     
-//    KThread low = forkNewThread(new Low(), 4).thread;
-//    KThread.yield();
-//    KThread med1 = forkNewThread(new Med(), 3).thread;
-//    KThread med2 = forkNewThread(new Med(), 3).thread;
-//    KThread high = forkNewThread(new High(), 1).thread;
-
     low.setName("low");
     med1.setName("med1");
     med2.setName("med2");
