@@ -213,8 +213,8 @@ public class KThread {
 		 if(joinedThread != null){
 			 currentThread = joinedThread; //it's important to switch back to the previous store thread
 			 lock.acquire();
-			 c2.wake();
-//			 c1.wake();
+//			 c2.wake();
+			 c1.wake();
 			 lock.release();
 		 }
 
@@ -319,8 +319,8 @@ public class KThread {
     	if(this.status != statusFinished) {
 	    	lock.acquire();
 	    	joinedThread = currentThread;
-	    	c2.sleep();
-//	    	c1.sleep();
+//	    	c2.sleep();
+	    	c1.sleep();
 	    	lock.release();
     	}
 

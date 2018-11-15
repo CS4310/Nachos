@@ -259,7 +259,7 @@ public class PriorityScheduler extends Scheduler {
 		public int getEffectivePriority() {
 		    // implement me
 			
-			return effectivePriorities.get(this);
+			return this.effectivePriority;
 		}
 		
 		
