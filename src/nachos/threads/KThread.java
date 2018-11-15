@@ -64,7 +64,7 @@ public class KThread {
 		 * initialize variable here
 		 ***************************/
 		lock = new Lock();
-	    c2 = new Condition2(lock);
+	    c2 = new Condition(lock);
 	    joinQueue = ThreadedKernel.scheduler.newThreadQueue(true);
 	    joinedThread = null;
 	    
@@ -492,7 +492,7 @@ public class KThread {
     /*******************
      * variable we use
      ******************/
-    static Condition2 c2;
+    static Condition c2;
     static Lock lock;
     static KThread joinedThread;
 }

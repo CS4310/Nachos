@@ -173,6 +173,10 @@ public class PriorityScheduler extends Scheduler {
 		    		waitQueue.remove(firstThread);
 			    	firstThread.acquire(this);	
 		    		//acquire(firstThread.thread);
+//			    	if(firstThread.waitingOn.isEmpty()) {
+//			    		System.out.println("I am not waiting on resource " + firstThread.thread+" priority: "+firstThread.getPriority() + " EP: " +firstThread.getEffectivePriority());
+//			    	}
+
 		    	}
 		    	return firstThread.thread;
 		    }
@@ -189,7 +193,7 @@ public class PriorityScheduler extends Scheduler {
 			if(dirty) {
 				effective = priorityMinimum;
 				for(int i=0; i<waitQueue.size(); i++) {
-					effective = Math.max(effective, waitQueue.get(i).getEffectivePriority());
+					effective = Math.max(effective, waitQueue.get(i).getPriority());
 				}
 			}
 			return effective;
@@ -213,13 +217,17 @@ public class PriorityScheduler extends Scheduler {
 		protected ThreadState pickNextThread() {
 		    // implement me
 		    //return null;
-			display("pickNextThread");
-			ThreadState ret = null;
-			for(int i=0; i<waitQueue.size(); i++) {
-				if(ret == null || waitQueue.get(i).getPriority() > ret.getEffectivePriority())
-					ret = waitQueue.get(i);
+			
+			ThreadState pickThread = waitQueue.pollLast();
+
+			// determine thread existence
+			if (pickThread != null) {
+				// return the thread picked
+				return (pickThread);
+				// if none found, return null
+			} else {
+				return null;
 			}
-			return ret;
 		}
 		
 		public void print() {
@@ -292,15 +300,21 @@ public class PriorityScheduler extends Scheduler {
 	 * @return	the effective priority of the associated thread.
 	 */
 	public int getEffectivePriority() {
+		//Lib.assertTrue(Machine.interrupt().disabled());
 		display("TS3 getEffectivePriority");
 	    // implement me
 	    //return priority;
-		if(!myResources.isEmpty() && dirty) {
-			for(int i=0; i<myResources.size();i++) {
-				effective = Math.max(effective, myResources.get(i).getEffectivePriority());
+		updateEP();
+		if (!myResources.isEmpty() && this.dirty) {
+			this.effective = this.getPriority();
+			// iterate through threads in resourceQueue
+			Iterator<PriorityQueue> nextThread = myResources.iterator();
+			while (nextThread.hasNext()) {
+				effective = Math.max(effective, nextThread.next().getEffectivePriority());
 			}
-			//dirty = false;
+			dirty = false;
 		}
+		// return final effective priority
 		return effective;
 	}
 
@@ -318,6 +332,33 @@ public class PriorityScheduler extends Scheduler {
 	    
 	    // implement me
 	    setDirty();
+	}
+	
+	public int calcMaxPriority() {
+
+		// current priority
+		int calcMaxEP = this.priority;
+
+		// iterate through the Priority queue
+		Iterator<PriorityQueue> thread = myResources.iterator();
+		while (thread.hasNext()) {
+
+			// determine maximum priority by comparing w/ effective priority
+			calcMaxEP = Math.max(calcMaxEP, (thread.next()).getEffectivePriority());
+
+		} // return max priority from PriorityQueue
+		return calcMaxEP;
+	}
+	
+	
+	public void updateEP() {
+		effective = calcMaxPriority();
+		PriorityQueue ret = null;
+	      for(int i=0; i<myResources.size(); i++) {
+	        if(ret == null || myResources.get(i).getEffectivePriority() > ret.getEffectivePriority())
+	          ret = myResources.get(i);
+	      }
+	      myResources.remove(ret);
 	}
 	
 	public void setDirty() {
@@ -358,9 +399,8 @@ public class PriorityScheduler extends Scheduler {
 		}
 		if(waitQueue.holder != null)
 			waitQueue.setDirty();
-
-
 	}
+	
 
 	/**
 	 * Called when the associated thread has acquired access to whatever is
@@ -406,3 +446,6 @@ public class PriorityScheduler extends Scheduler {
 	boolean dirty = false;
     }
 }
+
+
+
