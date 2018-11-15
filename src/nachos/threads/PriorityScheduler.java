@@ -260,7 +260,21 @@ public class PriorityScheduler extends Scheduler {
 		boolean dirty = false;
 		
 		int effective = priorityMinimum;
-	
+
+		public void updateEP() {
+			if(holder != null) {
+				//System.out.println("Priority Queue: holder.toString()");
+				holder.updateEP();
+				//System.out.println(holder.toString());
+			}
+		}
+		/*
+		@Override
+		public String toString() {
+			return "PriorityQueue [transferPriority=" + transferPriority + ", holder=" + holder + ", waitQueue="
+					+ waitQueue + ", dirty=" + dirty + ", effective=" + effective + "]";
+		}
+		*/
     }
 
     /**
@@ -331,6 +345,7 @@ public class PriorityScheduler extends Scheduler {
 	    this.priority = priority;
 	    
 	    // implement me
+	    updateEP();
 	    setDirty();
 	}
 	
@@ -352,6 +367,8 @@ public class PriorityScheduler extends Scheduler {
 	
 	
 	public void updateEP() {
+
+  	  	System.out.println(toString());
 		effective = calcMaxPriority();
 		PriorityQueue ret = null;
 	      for(int i=0; i<myResources.size(); i++) {
@@ -359,6 +376,13 @@ public class PriorityScheduler extends Scheduler {
 	          ret = myResources.get(i);
 	      }
 	      myResources.remove(ret);
+	      
+	      //System.out.println(getEffectivePriority());
+	      
+	      for(int i = 0; i < waitingOn.size(); i++) {
+	    	  //System.out.println("ThreadState" + toString());
+	    	  waitingOn.get(i).updateEP();
+	      }
 	}
 	
 	public void setDirty() {
@@ -444,6 +468,13 @@ public class PriorityScheduler extends Scheduler {
 	int effective = priorityMinimum;
 	
 	boolean dirty = false;
+
+	@Override
+	public String toString() {
+		return "ThreadState [thread=" + thread + ", priority=" + priority + ", myResources=" + myResources
+				+ ", waitingOn=" + waitingOn + ", effective=" + effective + ", dirty=" + dirty + "]";
+	}
+	
     }
 }
 

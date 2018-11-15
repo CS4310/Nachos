@@ -72,7 +72,7 @@ public class ThreadGrader6 extends BasicTestGrader
     /*
      * Test ThreadGrader6.b: Tests priority donation with multiple locks
      */
-    error_cnt = 0;
+    error_cnt = 0;  
     KThread t1 = forkNewThread(new a(lock[0]),1).thread;
     KThread t2 = forkNewThread(new a(lock[1], lock[0]),1).thread;
     KThread t3 = forkNewThread(new a(lock[2], lock[1]),1).thread;
